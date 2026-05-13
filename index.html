@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phishing Detector AI | AWS Project</title>
+    <style>
+        :root { --primary: #2563eb; --danger: #dc2626; --success: #16a34a; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); width: 100%; max-width: 450px; text-align: center; }
+        h1 { color: #1e293b; font-size: 1.5rem; margin-bottom: 1.5rem; }
+        input { width: 100%; padding: 0.75rem; border: 2px solid #e2e8f0; border-radius: 0.5rem; margin-bottom: 1rem; box-sizing: border-box; font-size: 1rem; transition: border 0.2s; }
+        input:focus { outline: none; border-color: var(--primary); }
+        button { width: 100%; background: var(--primary); color: white; border: none; padding: 0.75rem; border-radius: 0.5rem; font-size: 1rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
+        button:hover { opacity: 0.9; }
+        #result { margin-top: 1.5rem; padding: 1rem; border-radius: 0.5rem; font-weight: 600; display: none; }
+        .phishing { background: #fee2e2; color: var(--danger); border: 1px solid #fecaca; }
+        .safe { background: #dcfce7; color: var(--success); border: 1px solid #bbf7d0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Phishing Detector</h1>
+        <input type="text" id="urlInput" placeholder="Wklej adres URL do analizy...">
+        <button id="checkBtn">Sprawdź link</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const API_URL = 'https://rlrh4jcaz8.execute-api.us-east-1.amazonaws.com/prod/predict';
+
+        document.getElementById('checkBtn').addEventListener('click', async () => {
+            const url = document.getElementById('urlInput').value;
+            const resultDiv = document.getElementById('result');
+            
+            if (!url) return alert('Wpisz najpierw jakiś adres!');
+
+            resultDiv.style.display = 'block';
+            resultDiv.className = '';
+            resultDiv.style.background = '#f1f5f9';
+            resultDiv.style.color = '#475569';
+            resultDiv.innerText = '🤖 AI analizuje wzorce...';
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ texts: [url] })
+                });
+
+                const data = await response.json();
+                const prediction = data.predictions[0];
+
+                if (prediction === 'phishing') {
+                    resultDiv.innerText = '⚠️ UWAGA: To może być PHISHING!';
+                    resultDiv.className = 'phishing';
+                } else {
+                    resultDiv.innerText = '✅ Link wydaje się BEZPIECZNY';
+                    resultDiv.className = 'safe';
+                }
+            } catch (error) {
+                resultDiv.innerText = '❌ Błąd połączenia z AWS';
+                console.error(error);
+            }
+        });
+    </script>
+</body>
+</html>
