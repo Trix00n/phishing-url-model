@@ -27,7 +27,7 @@
     </div>
 
     <script>
-        const API_URL = 'https://rlrh4jcaz8.execute-api.us-east-1.amazonaws.com/prod/predict';
+        const API_URL = 'https://yfb9kbh2wk.execute-api.us-east-1.amazonaws.com/prod/predict';
 
         document.getElementById('checkBtn').addEventListener('click', async () => {
             const url = document.getElementById('urlInput').value;
@@ -49,13 +49,15 @@
                 });
 
                 const data = await response.json();
-                const prediction = data.predictions[0];
+                // Pobieramy wynik punktowy (np. 0.85) i zamieniamy na procent (85.00%)
+                const score = data.phishing_score[0];
+                const percentage = (score * 100).toFixed(2);
 
-                if (prediction === 'phishing') {
-                    resultDiv.innerText = '⚠️ UWAGA: To może być PHISHING!';
+                if (score > 0.5) {
+                    resultDiv.innerText = `⚠️ UWAGA: Prawdopodobieństwo phishingu: ${percentage}%`;
                     resultDiv.className = 'phishing';
                 } else {
-                    resultDiv.innerText = '✅ Link wydaje się BEZPIECZNY';
+                    resultDiv.innerText = `✅ Link wydaje się bezpieczny (Ryzyko: ${percentage}%)`;
                     resultDiv.className = 'safe';
                 }
             } catch (error) {
